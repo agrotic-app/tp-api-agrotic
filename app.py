@@ -1,32 +1,23 @@
-# app.py
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 import requests
 
-# On crée l'application Flask
 app = Flask(__name__)
 
-# --- EXERCICE 3 : Route Principale ---
-# Cette route est déjà fonctionnelle. Elle sert à vérifier que le serveur se lance bien.
 @app.route('/')
-def hello():
-    return "Bienvenue sur l'Agro-Conseil API ! 🌾"
+def home():
+    return "Bienvenue sur l'API AgroTIC !"
 
+# TODO: Exercise 4 - Implement the irrigation advice endpoint
+# 1. Create a route '/conseil-irrigation' that accepts 'lat' and 'lon' query parameters
+# 2. Validate that 'lat' and 'lon' are provided and are valid numbers
+# 3. Use requests.get() to fetch weather data from Open-Meteo API (reuse logic from get_weather.py)
+# 4. Extract temperature and precipitation with error handling
+# 5. Implement irrigation logic: recommend irrigation if precipitation < 5 mm and temperature > 25°C
+# 6. Return a JSON response with latitude, longitude, temperature, precipitation, and advice
+# Example: return jsonify({"latitude": lat, "advice": "Irrigation recommandée"})
+@app.route('/conseil-irrigation')
+def irrigation_advice():
+    return jsonify({"message": "Not implemented yet"})
 
-# --- EXERCICE 4 : Route pour le conseil d'irrigation ---
-#
-# TODO: Créez une nouvelle route '/conseil-irrigation' qui :
-#   1. Récupère les paramètres d'URL 'lat' et 'lon'.
-#   2. Appelle l'API Open-Meteo pour ces coordonnées (réutilisez le code de get_weather.py !).
-#   3. Applique une logique simple : si le cumul de pluie est < 5mm, la décision est "OUI", sinon "NON".
-#   4. Renvoie un objet JSON contenant les coordonnées, la pluie prévue et la décision.
-#   5. (BONUS) Ajoute un "easter egg" pour une localisation amusante.
-#
-# @app.route('/conseil-irrigation')
-# def irrigation_advice():
-#     # ... Votre code ici ...
-#     pass
-
-
-# Cette partie permet de lancer le serveur en exécutant 'python app.py'
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,46 +1,34 @@
-# get_weather.py
 import requests
 
-# Coordonnées GPS de Montpellier
-LATITUDE = 43.61
-LONGITUDE = 3.87
+# Base URL for Open-Meteo API
+url = "https://api.open-meteo.com/v1/forecast"
 
-# URL de base de l'API Open-Meteo
-base_url = "https://api.open-meteo.com/v1/forecast"
+# TODO: Exercise 1 - Construct the API request parameters
+# 1. Add parameters to the 'params' dictionary to fetch:
+#    - Current weather data
+#    - Daily precipitation sum
+#    - Timezone set to Europe/Paris
+# 2. Refer to the Open-Meteo documentation: https://open-meteo.com/en/docs
+# Example: params = {"latitude": 43.6119, "longitude": 3.8772, ...}
+params = {}
 
-# --- EXERCICE 1 : Construire la requête ---
-#
-# TODO: 1. Allez sur la documentation d'Open-Meteo : https://open-meteo.com/en/docs
-# TODO: 2. Remplissez le dictionnaire 'params' ci-dessous pour demander :
-#           - La météo actuelle ('current_weather')
-#           - Le cumul de pluie journalier ('daily' -> 'precipitation_sum')
-#           - Le fuseau horaire de Paris ('timezone')
-#
-params = {
-    "latitude": LATITUDE,
-    "longitude": LONGITUDE,
-    # ... Complétez ici avec les autres paramètres
-}
+# Make the API request
+response = requests.get(url, params=params)
 
-print("Construction de la requête...")
+# Check if the request was successful
+if response.status_code != 200:
+    print(f"API Error: Status code {response.status_code}")
+    exit(1)
 
-# La librairie 'requests' va automatiquement construire l'URL finale à partir de la base et des paramètres
-response = requests.get(base_url, params=params)
+data = response.json()
 
-# --- La suite du code reste la même ---
-# On vérifie si la requête a réussi (code de statut 200)
-if response.status_code == 200:
-    print("Succès ! Données reçues.")
-    # On transforme la réponse (texte) en un dictionnaire Python (JSON)
-    data = response.json()
-    
-    # Affichez l'URL que 'requests' a réellement appelée, pour vérification
-    print(f"URL appelée : {response.url}")
+# TODO: Exercise 2 - Extract temperature and precipitation
+# 1. Extract current temperature from data['current_weather']['temperature']
+# 2. Extract daily precipitation sum from data['daily']['precipitation_sum'][0]
+# 3. Add error handling to check if these keys exist in the response
+# Example: Use data.get('key', default) or try-except to avoid KeyError
+temperature = None  # Your code here
+precipitation = None  # Your code here
 
-    # --- EXERCICE 2 : Extraction ---
-    #
-    # TODO: 1. Naviguez dans le dictionnaire 'data' pour trouver la température actuelle.
-    # TODO: 2. Stockez-la dans une variable nommée 'current_temp'.
-    # TODO: 3. Affichez-la de manière propre avec un print().
-    #
-    # DÉFI: Faites de même pour le cumul de pluie prévu
+print(f"Current temperature: {temperature}°C")
+print(f"Daily precipitation sum: {precipitation} mm")

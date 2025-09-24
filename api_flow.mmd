@@ -1,0 +1,5 @@
+graph TD
+    A[Client REST] -->|Requête HTTP| B[API Flask /conseil-irrigation]
+    B -->|Appel API| C[Open-Meteo API]
+    C -->|Données météo| B
+    B -->|Conseil d'irrigation| A
