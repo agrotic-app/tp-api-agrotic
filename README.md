@@ -28,7 +28,7 @@ Avant de commencer, assurez-vous d'avoir installé :
    - Git est un outil de gestion de versions. Pour cloner le projet, utilisez :
      ```bash
      git clone https://github.com/agrotic-app/tp-api-agrotic.git
-     cd agrotic-api-workshop
+     cd tp-api-agrotic
      ```
    - Si vous obtenez une erreur (par exemple, "command not found"), vérifiez que Git est installé et ajouté au PATH de votre système.
    - Si vous êtes novice avec Git, demandez de l'aide à votre formateur ou consultez [Git Basics](https://git-scm.com/book/fr/v2/D%C3%A9marrage-rapide-Au-sujet-du-contr%C3%B4le-de-version).
