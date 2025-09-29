@@ -63,10 +63,18 @@ Avant de commencer, assurez-vous d'avoir installé :
        ```
    *(Votre terminal devrait maintenant afficher `(venv)` au début de la ligne)*
 
+
 5. **Installez les librairies Python :**
     ```bash
     pip install -r requirements.txt
     ```
+
+
+6.  **Exécutez l'application Flask :**
+    ```bash
+    flask run
+    ```
+    Une fois le serveur démarré, vous devriez voir un message dans votre terminal indiquant qu'il est actif, généralement à l'adresse `http://127.0.0.1:5000`. Vous pouvez alors ouvrir cette URL dans votre navigateur pour voir votre application en action.
 
 Vous êtes prêt !
 
