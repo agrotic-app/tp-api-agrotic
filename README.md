@@ -1,6 +1,6 @@
-# 🚜 TP API pour l'AgroTIC : de la consommation à la création
+# 🚜 TP API pour AgroTIC : de la consommation à la création
 
-Bienvenue dans cet atelier de 2h30 pour découvrir le monde des APIs !
+Bienvenue dans cet atelier de 2h30 pour découvrir quelques notions sur les APIs
 
 **Votre mission :** Vous êtes ingénieur(e) AgroTIC. Un client agronome a besoin d'un outil simple pour l'aider à décider s'il doit irriguer sa parcelle. Votre rôle est de récupérer des données météo brutes, de les transformer en un conseil clair et de le rendre accessible via une API que vous allez créer.
 
