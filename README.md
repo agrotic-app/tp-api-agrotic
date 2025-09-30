@@ -25,11 +25,7 @@ Avant de commencer, assurez-vous d'avoir installé :
    - Assurez-vous que Git est installé : `git --version`
    - Si Git n'est pas installé, téléchargez-le depuis [https://git-scm.com/](https://git-scm.com/).
 2. **Introduction à Git** :
-   - Git est un outil de gestion de versions. Pour cloner le projet, utilisez :
-     ```bash
-     git clone https://github.com/agrotic-app/tp-api-agrotic.git
-     cd tp-api-agrotic
-     ```
+   - Git est un outil de gestion de versions
    - Si vous obtenez une erreur (par exemple, "command not found"), vérifiez que Git est installé et ajouté au PATH de votre système.
    - Si vous êtes novice avec Git, demandez de l'aide à votre formateur ou consultez [Git Basics](https://git-scm.com/book/fr/v2/D%C3%A9marrage-rapide-Au-sujet-du-contr%C3%B4le-de-version).
 
@@ -72,7 +68,7 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 6.  **Exécutez l'application Flask :**
     ```bash
-    flask run
+    flask run --debug
     ```
     Une fois le serveur démarré, vous devriez voir un message dans votre terminal indiquant qu'il est actif, généralement à l'adresse `http://127.0.0.1:5000`. Vous pouvez alors ouvrir cette URL dans votre navigateur pour voir votre application en action.
 
