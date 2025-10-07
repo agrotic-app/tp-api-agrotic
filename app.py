@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Bienvenue sur l'API AgroTIC !"
+    return "Chichi forever !"
 
 # TODO: Exercise 4 - Implement the irrigation advice endpoint
 # 1. Create a route '/conseil-irrigation' that accepts 'lat' and 'lon' query parameters

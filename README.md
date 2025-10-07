@@ -1,14 +1,33 @@
-# 🚜 TP API pour AgroTIC : de la consommation à la création
+# 🚜 TP API pour AgroTIC : La Chaîne de Décision de Fauche
 
-Bienvenue dans cet atelier de 2h30 pour découvrir quelques notions sur les APIs
+Bienvenue dans cet atelier de **2h30** pour découvrir l'architecture et l'interconnexion des APIs dans un contexte agronomique.
 
-**Votre mission :** Vous êtes ingénieur(e) AgroTIC. Un client agronome a besoin d'un outil simple pour l'aider à décider s'il doit irriguer sa parcelle. Votre rôle est de récupérer des données météo brutes, de les transformer en un conseil clair et de le rendre accessible via une API que vous allez créer.
+## 🎯 Votre Mission : Développeur(se) pour la F.A.U.C.H.E.
 
-**Objectifs pédagogiques :**
-* Comprendre ce qu'est une API et à quoi ça sert.
-* Consommer une API externe (météo) avec Python.
-* Créer votre propre API web simple avec le framework Flask.
-* Tester vos points d'accès (endpoints) avec un client REST.
+Vous faites partie d'une équipe de développeurs AgroTIC. Votre client a besoin d'un outil d'aide à la décision pour optimiser la **fauche de ses prairies de foin**. La fauche est un processus critique qui demande de combiner plusieurs facteurs : la **maturité de la culture**, les **prévisions météo** et les **risques environnementaux/logistiques**.
+
+**Votre rôle est de participer collectivement à la construction d'une chaîne d'APIs :**
+1.  **APIs Filles (Les Experts) :** Chaque binôme développe une API spécialisée (Degrés-Jours, Météo, Risques) qui fournit un indicateur clé.
+2.  **API Mère (Le Décideur) :** Un binôme développera l'API finale qui appelle les APIs filles, combine les résultats et renvoie le conseil de fauche final.
+
+**Objectifs Pédagogiques :**
+* **Comprendre l'Architecture Microservices :** Comment des services isolés communiquent pour résoudre un problème complexe.
+* **Consommer une API Externe (Météo) :** Appeler un service public pour récupérer des données brutes.
+* **Créer et Interconnecter vos propres APIs (Flask) :** Utiliser votre IP locale pour appeler le service développé par un autre binôme.
+* **Modélisation Agronomique :** Traduire des règles agronomiques (DDC, Risque Faune, Météo de Séchage) en code.
+
+---
+
+## 👥 Distribution des Rôles (Groupes de 3 et 4 binômes)
+
+Chaque binôme sera responsable du développement et de la documentation de son API, en respectant le **contrat JSON** pour que l'API Mère puisse s'y connecter.
+
+| Groupe | Binôme | Rôle de l'API | Fonction Agronomique |
+| :--- | :--- | :--- | :--- |
+| **G1 & G2** | **B1 (API Mère)** | `api-decision-fauche` | **Synthèse et Décision** : Appelle toutes les autres APIs, applique la logique finale pour dire OUI/NON à la fauche. |
+| **G1 & G2** | **B2 (API Fille 1)** | `api-degres-jours` | **Maturité de la Culture** : Calcule le DDC pour vérifier si la culture est prête. |
+| **G1 & G2** | **B3 (API Fille 2)** | `api-meteo-sechage` | **Logistique Séchage** : Vérifie l'absence de pluie et les conditions de séchage pour les 48h suivantes. |
+| **G2** | **B4 (API Fille 3)** | `api-risque-faon` | **Biodiversité/Risque Faune** : Évalue le risque de présence de faons (logique simulée). |
 
 ---
 
@@ -31,7 +50,7 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 ---
 
-### ⚙️ 1. Mise en place de l'environnement (10 min)
+### ⚙️ 1. Mise en place de l'environnement
 
 1. **Clonez le projet :** Ouvrez un terminal et exécutez la commande suivante pour télécharger le projet sur votre machine.
     ```bash
@@ -68,7 +87,7 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 6.  **Exécutez l'application Flask :**
     ```bash
-    flask run --debug
+    flask run --debug --host=0.0.0.0
     ```
     Une fois le serveur démarré, vous devriez voir un message dans votre terminal indiquant qu'il est actif, généralement à l'adresse `http://127.0.0.1:5000`. Vous pouvez alors ouvrir cette URL dans votre navigateur pour voir votre application en action.
 
@@ -76,137 +95,146 @@ Vous êtes prêt !
 
 ---
 
-### 🌦️ 2. Acte I : L'explorateur météo (consommation)
+## 🌡️ 1. Acte I : L'API Degrés-Jours Cumulés (DDC)
 
-Votre mission est de contacter l'API météo **Open-Meteo** pour récupérer les données d'une parcelle près de Montpellier. Mais pour cela, il vous faudra d'abord lire la documentation pour savoir *comment* lui parler !
+Votre binôme (API Fille 1) doit développer l'API qui détermine la **maturité** du foin. Pour cela, vous allez calculer les **Degrés-Jours Cumulés (DDC)**, une mesure thermique du développement des plantes.
 
-**Exercice 1 : Construire la requête**
+$$\text{DDC} = \sum (\text{Température Moyenne} - \text{Température de Base})$$
 
-1. Ouvrez le fichier `get_weather.py`. Vous y trouverez une URL de base et un dictionnaire `params` vide.
-2. Rendez-vous sur la **documentation officielle d'Open-Meteo : [https://open-meteo.com/en/docs](https://open-meteo.com/en/docs)**.
-3. **Votre mission :** Lisez la documentation pour trouver les bons paramètres à ajouter au dictionnaire `params` afin d'obtenir :
-   * La météo actuelle.
-   * Le cumul de précipitation journalier.
-   * Les données pour le fuseau horaire de Paris.
-4. Une fois le dictionnaire complété, exécutez le script : `python get_weather.py`.
+Pour les graminées de foin, la **Température de Base ($T_b$)** est souvent fixée à $\mathbf{6^{\circ}C}$.
+
+**Votre mission :** Modifier le script `degres_jours.py` pour consommer l'API **Open-Meteo Archive** (données historiques) et calculer le DDC entre le **1er mars** de l'année en cours et la date du jour.
+
+### Exercice 1 : Construire et Consommer la Requête Historique 
+
+1.  Ouvrez le fichier `degres_jours.py`.
+2.  **Recherchez la documentation Open-Meteo :** Trouvez l'**URL** de l'API dédiée aux **données historiques** (l'URL par défaut est pour les prévisions) et les **paramètres** nécessaires pour obtenir les températures moyennes journalières (`daily`).
+3.  **Votre mission :** Complétez la variable `URL_HISTORIQUE` et le dictionnaire `params` dans `degres_jours.py`. Les paramètres doivent inclure :
+    * Les **températures moyennes journalières**.
+    * Les dates de début et de fin.
+    * La latitude, la longitude et le fuseau horaire.
+4.  Exécutez le script : `python degres_jours.py`.
+
+### Exercice 2 : Calculer le DDC et Afficher la Maturité 
+
+1.  Ouvrez `degres_jours.py` et trouvez la section `TODO: Calcul du DDC`.
+2.  **Inspectez la réponse JSON :** À partir du `data` (la réponse JSON), trouvez la **clé exacte** qui contient la liste des températures moyennes.
+3.  **Implémentez la logique de DDC :**
+    * Initialisez `DDC_cumule = 0`.
+    * Pour chaque température (`T_moyenne`) :
+        * Calculez le Degré-Jour du jour en appliquant la formule
+        * Ajoutez cette valeur au `DDC_cumule`.
+4.  Affichez le DDC final et le conseil de maturité.
+L'API mère attend une réponse au format JSON qui indique clairement l'état de maturité :
+
+```json
+{
+  "statut_maturite": "ATTEINTE",
+  "ddc_cumule": 650.45,
+  "seuil_maturite": 600
+}
+```
 
 <details>
-<summary>💡 En cas de blocage pour l'exercice 1, cliquez ici</summary>
-
-* **Indice 1 (Structure) :** Une URL de requête se compose de l'URL de base, suivie d'un `?`, puis des paires `cle=valeur` séparées par des `&`. La librairie `requests` s'en occupe pour nous avec le dictionnaire `params`. Vous devez juste trouver les bonnes clés et valeurs.
-* **Indice 2 (Météo actuelle) :** Cherchez le paramètre `current_weather` dans la documentation. La doc précise qu'il faut lui donner la valeur `true` pour l'activer.
-* **Indice 3 (Données journalières) :** Le paramètre pour les données journalières est `daily`. La documentation montre qu'il faut lui préciser *quelles* données on veut. Pour le cumul de pluie, la valeur sera donc `precipitation_sum`.
-* **Indice 4 (Fuseau horaire) :** Cherchez `timezone` dans la doc. Pour Paris, la valeur requise est `Europe/Paris`.
-
+<summary>💡 Indice 1 (URL et Paramètre)</summary>
+L'API d'archive est sur le sous-domaine `archive-api`. Le paramètre pour les températures moyennes journalières se trouve dans la section `daily`.
 </details>
 
-**Exercice 2 : Extraire les données**
-
-1. Ouvrez `get_weather.py` et trouvez la section `TODO`.
-2. Extrayez la température actuelle et le cumul de précipitation journalier depuis le dictionnaire `data`.
-3. Ajoutez une gestion d'erreur pour vérifier si les clés existent. Par exemple, utilisez `data.get('current_weather', {}).get('temperature', 'N/A')` ou un bloc `try-except` pour gérer les `KeyError`.
-4. Testez votre script avec `python get_weather.py` et vérifiez la sortie.
-
 <details>
-<summary>💡 En cas de blocage pour l'exercice 2, cliquez ici</summary>
-
-* **Indice 1 :** La variable `data` est un dictionnaire Python. Vous pouvez accéder à ses clés avec `data['nom_de_la_cle']`.
-* **Indice 2 :** Pour voir la structure, n'hésitez pas à ajouter `print(data)` au début de votre code pour visualiser toutes les clés disponibles.
-* **Indice 3 :** Les valeurs peuvent être elles-mêmes des dictionnaires ! Pour accéder à une valeur nichée, on enchaîne les clés : `data['cle_principale']['cle_secondaire']`.
-* **Indice 4 :** Pour le cumul de pluie, la clé `'precipitation_sum'` contient une *liste*. Il faut donc accéder à son premier élément avec `[0]`.
-
+<summary>💡 Indice 2 (Clé de la donnée)</summary>
+La clé pour les températures moyennes est `temperature_2m_mean`.
 </details>
 
----
-
-### 🛠️ 3. Acte II : Le créateur de service (création)
-
-Maintenant, nous allons créer notre propre API pour fournir un conseil simple à notre agronome.
-
-**Exercice 3 : Notre première API "Hello, Farmer!"**
-
-1. Ouvrez le fichier `app.py`. Le code de base pour une API simple y est déjà présent.
-2. Lancez le serveur depuis votre terminal : `python app.py`.
-3. Ouvrez votre navigateur et allez sur `http://127.0.0.1:5000`. Vous devriez voir un message de bienvenue ! Cela confirme que votre serveur fonctionne.
-
-**Exercice 4 : L'API d'aide à l'irrigation**
-
-1. Ouvrez `app.py` et trouvez le `TODO` pour la route `/conseil-irrigation`.
-2. Utilisez `request.args.get('lat')` et `request.args.get('lon')` pour récupérer la latitude et la longitude des paramètres de l'URL.
-3. Validez que `lat` et `lon` sont fournis et sont des nombres valides. Sinon, renvoyez une réponse JSON d'erreur avec le code HTTP 400 en utilisant `abort(400, description="Message d'erreur")`.
-4. Réutilisez la logique de l'API météo de `get_weather.py` pour récupérer les données et renvoyer une réponse JSON avec un conseil d'irrigation.
-5. Ajoutez une fonction pour déterminer le conseil d'irrigation basé sur les données météo. Par exemple :
-   - Si les précipitations sont inférieures à 5 mm et la température dépasse 25°C, recommandez l'irrigation.
-   - Sinon, conseillez de ne pas irriguer.
-6. Implémentez cette logique dans la route `/conseil-irrigation` avant de renvoyer la réponse JSON. Exemple :
-    ```python
-    advice = "Irrigation recommandée" if precipitation < 5 and temperature > 25 else "Pas d'irrigation nécessaire"
-    ```
-7. Assurez-vous que le champ `advice` est inclus dans la réponse JSON.
-
-**Tester votre nouvelle API avec REST Client**
-
-1. Une fois votre code écrit, arrêtez et relancez votre serveur (`python app.py`).
-2. Ouvrez le fichier `requests.http` dans VSCode.
-3. Cliquez sur "Send Request" à côté de chaque requête dans `requests.http` pour tester votre API.
-4. Interprétez les réponses :
-   - **200 OK** : La requête a réussi. Vérifiez la sortie JSON pour la température, les précipitations et le conseil d'irrigation.
-   - **400 Bad Request** : Paramètres manquants ou invalides (par exemple, `lat` ou `lon`). Lisez le champ `description` pour plus de détails.
-   - **500 Internal Server Error** : Problème avec l'API Open-Meteo ou la logique du serveur. Vérifiez votre code et l'état de l'API.
-5. Essayez de modifier les valeurs de `lat` et `lon` dans `requests.http` pour tester d'autres lieux (par exemple, Paris : `lat=48.8566&lon=2.3522`).
-6. Si REST Client ne fonctionne pas, essayez `curl` dans le terminal :
-    ```bash
-    curl http://127.0.0.1:5000/conseil-irrigation?lat=43.6119&lon=3.8772
-    ```
-
 <details>
-<summary>💡 En cas de blocage, cliquez ici pour des indices</summary>
-
-* **Indice 1 (Décorateur) :** N'oubliez pas le décorateur `@app.route('/conseil-irrigation')` juste avant la définition de votre fonction.
-* **Indice 2 (Paramètres) :** Pour récupérer les paramètres d'URL (`?lat=...`), utilisez l'objet `request` de Flask : `lat = request.args.get('lat')`. N'oubliez pas d'importer `request` depuis `flask` !
-* **Indice 3 (Réutiliser le code) :** Copiez-collez la logique d'appel à l'API météo que vous avez écrite dans `get_weather.py`.
-* **Indice 4 (Retourner du JSON) :** Une API doit retourner un format standardisé. Utilisez la fonction `jsonify()` de Flask pour transformer un dictionnaire Python en une réponse JSON valide. Par exemple : `return jsonify({"cle": "valeur"})`.
-
+<summary>💡 Indice 3 (Formule Python)</summary>
+Vous pouvez utiliser la fonction native `max(a, b)` pour implémenter la partie $\max(0, ...)$ de la formule.
 </details>
 
 ---
 
-### 🏆 Défis pour les plus rapides
+## ☁️ 2. Acte II : L'API Météo Séchage (Logistique)
 
-Si vous avez terminé, voici quelques idées pour aller plus loin :
+Votre binôme (API Fille 2) est responsable de l'évaluation du **risque logistique** lié à la météo. L'objectif est de s'assurer que, si l'on fauche aujourd'hui, les **48 prochaines heures** permettront au foin de sécher correctement sans être mouillé, ce qui dégraderait sa qualité (perte d'éléments nutritifs, risque de moisissure).
 
-* **Défi 1 :** Créer une nouvelle route `/info-parcelle/<id_parcelle>` qui utilise un **paramètre de chemin** et renvoie un JSON avec de fausses informations sur la parcelle (type de sol, culture...).
-* **Défi 2 :** Modifiez la route `/conseil-irrigation` pour accepter un paramètre `type_culture` (par exemple, `?lat=...&lon=...&type_culture=mais`). Définissez un dictionnaire avec les besoins en eau des cultures (par exemple, maïs : 5 mm/jour, vigne : 3 mm/jour). Ajustez la logique d'irrigation pour recommander l'irrigation si les précipitations sont inférieures au besoin de la culture et la température dépasse 25°C. Mettez à jour la réponse JSON pour inclure le type de culture.
-* **Défi 3 :** Gérez mieux les erreurs. Que se passe-t-il si les paramètres `lat` ou `lon` sont manquants ? Renvoyez un message d'erreur clair avec un code de statut 400 (Bad Request).
-* **Défi 4 :** Modifiez la route `/conseil-irrigation` pour récupérer le paramètre `et0_fao_evapotranspiration` depuis Open-Meteo (voir [https://open-meteo.com/en/docs](https://open-meteo.com/en/docs)). Ajustez la logique d'irrigation pour recommander l'irrigation si l'évapotranspiration dépasse 4 mm/jour et les précipitations sont insuffisantes. Mettez à jour la réponse JSON pour inclure les données d'évapotranspiration.
-* **Défi 5 :** Créez un fichier `weather_chart.html` pour afficher un graphique en barres des précipitations journalières avec Chart.js. Récupérez 5 jours de données de précipitation depuis Open-Meteo en ajoutant `"daily": "precipitation_sum"` et `forecast_days=5` dans les paramètres de l'API. Mettez à jour l'objet `data` de Chart.js avec les valeurs récupérées. Ouvrez `weather_chart.html` dans un navigateur pour voir le graphique.
+**Votre mission :** Modifier le script `meteo_sechage.py` pour consommer l'API **Open-Meteo Prévisions** (données futures) et évaluer le risque de pluie et l'efficacité du séchage sur les 48 heures à venir.
+
+### Exercice 3 : Construire la Requête de Prévisions 
+
+1.  Ouvrez le fichier `meteo_sechage.py`.
+2.  **Recherchez la documentation Open-Meteo :** Trouvez l'**URL** de l'API dédiée aux **prévisions** (l'URL par défaut pour le futur) et les **paramètres** nécessaires pour obtenir les prévisions **horaires** sur les 48 prochaines heures.
+3.  **Votre mission :** Complétez la variable `URL_PREVISIONS` et le dictionnaire `params` dans `meteo_sechage.py`. Les paramètres doivent inclure :
+    * Les prévisions **horaires** pour les **précipitations** (cumul de pluie) et l'**humidité relative de l'air**.
+    * La durée : **48 heures**.
+    * La latitude, la longitude et le fuseau horaire.
+4.  Exécutez le script : `python meteo_sechage.py`.
+
+### Exercice 4 : Calculer le Risque de Séchage 
+
+1.  Ouvrez `meteo_sechage.py` et trouvez la section `TODO: Calcul du Risque`.
+2.  **Inspectez la réponse JSON :** Trouvez les **clés exactes** des données horaires : les **précipitations** (en mm) et l'**humidité relative de l'air** (en %).
+3.  Règle de Décision Agronomique
+
+La décision doit être prise selon la hiérarchie de risque suivante :
+
+1.  **Priorité 1 (Pluie) :** S'il y a **une seule heure** avec une précipitation $> 0.1 \text{ mm}$ sur les 48h, le fauchage est **À Éviter (Raison : Pluie)**.
+2.  **Priorité 2 (Séchage Lent) :** S'il y a **plus de 30 heures** avec une humidité relative de l'air supérieure à $70\%$ sur les 48h, le fauchage est **À Éviter (Raison : Séchage lent)**.
+3.  **OK :** Sinon (aucune des conditions ci-dessus n'est remplie), le fauchage est **Fauchage Recommandé**.
+4.  Affichez la conclusion : **Fauchage Recommandé** ou **À Éviter (Raison : Pluie / Séchage lent)**.
+```json
+{
+  "conseil_sechage": "Fauchage Recommandé",
+  "justification": "Moins de 30h de forte humidité et aucune pluie prévue."
+}
+```
+
+<details>
+<summary>💡 Indice 1 (URL et Paramètres)</summary>
+L'URL de base pour les prévisions est `https://api.open-meteo.com/v1/forecast`. Vous devrez utiliser le paramètre `hourly` et la limite de temps `forecast_days=2`.
+</details>
+
+<details>
+<summary>💡 Indice 2 (Clés de la donnée)</summary>
+Les clés pour les données horaires sont `rain` ou `precipitation` et `relative_humidity_2m`.
+</details>
+
+<details>
+<summary>💡 Indice 3 (Logique Python)</summary>
+Vous pouvez utiliser une boucle `for` simple et des compteurs pour évaluer le nombre d'heures concernées par un risque.
+</details>
+
 
 ---
 
-### 📊 Visualisation des données
+## 🦌 3. Acte III : L'API Risque Faons (Biodiversité)
 
-Pour visualiser les données, deux outils sont fournis :
-1. **Graphique des précipitations** : Le fichier `weather_chart.html` affiche un graphique en barres des précipitations journalières. Ouvrez-le dans un navigateur pour voir le résultat. Pour intégrer des données réelles, modifiez le script pour appeler une route API (voir Défi 5).
-2. **Diagramme du flux de données** : Un diagramme Mermaid est inclus dans `api_flow.mmd`. Ouvrez-le dans VSCode avec l'extension Mermaid pour visualiser le flux entre le client REST, votre API Flask, et l'API Open-Meteo.
+Votre binôme (API Fille 3, pour le groupe de 4 binômes) est chargé d'évaluer le **risque faunistique**. La fauche est une cause majeure de mortalité des faons de chevreuil qui se cachent dans les hautes herbes au printemps.
 
----
+Ce modèle utilise des données **simulées** basées sur des critères **écologiques** pour créer un score de risque pondéré.
 
-### Solutions
-Consultez les fichiers `solutions/get_weather_solution.py` et `solutions/app_solution.py` pour vérifier vos réponses après avoir terminé les exercices.
+### Règle de Modélisation du Risque Faons
 
----
+L'API doit calculer un **score de risque final sur une échelle de 1 à 10** en combinant trois critères :
 
-### 🕒 Planning de l'atelier (2h30)
+1.  **Période de Risque (Base) :** La période de mise bas des faons est la plus critique.
+    * **Niveau 1 (Faible) :** En dehors de la période critique. (Score de base : 2)
+    * **Niveau 2 (Moyen) :** Début ou fin de période (ex: 15-31 mai / 21-30 juin). (Score de base : 5)
+    * **Niveau 3 (Élevé) :** Pleine période de mise bas (ex: 1er-20 juin). (Score de base : 8)
+2.  **Voisinage (Multiplicateur) :** La proximité d'un habitat augmente le risque.
+    * Parcelle bordée de **Forêt / Haies** : Multiplieur **x 1.5**
+    * **Champ ouvert** : Multiplieur **x 1.0**
+3.  **Décalage Saisonnier (Ajustement) :** Une année froide décale la mise bas.
+    * Si **Année précédente froide** (simulé par `annee_froide=True`) : Décalage de **+ 7 jours** pour toutes les bornes de la Période de Risque.
 
-| Section | Durée estimée |
-|---------|---------------|
-| Mise en place de l'environnement | 10 min |
-| Acte I : L'explorateur météo | 40 min |
-| Acte II : Le créateur de service | 60 min |
-| Défis pour les plus rapides | 30 min |
-| Conclusion & discussion | 10 min |
 
----
+L'API mère attend un score et un conseil précis :
+
+```json
+{
+  "risque_faon_niveau": 9.5, // Score de 1 à 10
+  "conseil_faune": "Fauche à haut risque - Utiliser un système d'effarouchement",
+  "justification": "Pleine période de risque (8) multiplié par la proximité de la forêt (x1.5)."
+}
+```
 
 ### 📚 Conclusion & ressources pour aller plus loin
 
