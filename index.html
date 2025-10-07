@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚜 Aide à la Décision de Fauche</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .header-agrotic {
+        background-color: #28a745; /* Vert agricole */
+        color: white;
+        padding: 1.5rem 0;
+        margin-bottom: 2rem;
+      }
+      .card-decision {
+        transition: transform 0.3s;
+      }
+      .card-decision:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      }
+      /* Styles spécifiques pour la décision */
+      .decision-oui {
+        background-color: #d4edda;
+        color: #155724;
+        border-left: 5px solid #28a745;
+      }
+      .decision-non {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-left: 5px solid #dc3545;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header-agrotic text-center">
+      <h1>🚜 Outil d'Aide à la Décision de Fauche</h1>
+      <p class="lead">
+        Synthèse des indicateurs agronomiques pour la parcelle.
+      </p>
+    </header>
+
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <button id="fetchButton" class="btn btn-success btn-lg mb-4 w-100">
+            Lancer l'Analyse de Décision
+          </button>
+
+          <div id="resultsCard" class="card shadow-sm card-decision d-none">
+            <div class="card-body">
+              <h4 class="card-title mb-4">Résultats de l'Analyse</h4>
+
+              <div id="decisionBlock" class="p-3 mb-4 rounded"></div>
+
+              <h5 class="mt-4">Justification détaillée:</h5>
+              <p id="justificationText" class="alert alert-info"></p>
+
+              <h5 class="mt-4">Facteurs clés considérés:</h5>
+              <ul class="list-group list-group-flush" id="facteursList"></ul>
+            </div>
+          </div>
+
+          <div id="statusMessage" class="alert d-none mt-4" role="alert">
+            Chargement de l'analyse...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://127.0.0.1:5000/api-decision-fauche"; // L'URL de votre API Mère
+      const resultsCard = document.getElementById("resultsCard");
+      const decisionBlock = document.getElementById("decisionBlock");
+      const justificationText = document.getElementById("justificationText");
+      const facteursList = document.getElementById("facteursList");
+      const statusMessage = document.getElementById("statusMessage");
+      const fetchButton = document.getElementById("fetchButton");
+
+      // Les données bidons pour la démo
+      const DEMO_DATA = {
+        decision_finale_fauche: "NON",
+        justification:
+          "Maturité non atteinte, malgré une Météo OK et un risque Faune modéré. (Sol: Limon Franc)",
+        facteurs_cles: {
+          maturite_ddc: 520.5,
+          conseil_sechage: "Fauchage Recommandé",
+          risque_faon_niveau: 4.5,
+          type_sol: "Limon Franc (Mode Démo)",
+        },
+      };
+
+      // --- Événements ---
+      fetchButton.addEventListener("click", () => fetchData(API_URL));
+
+      // --- Fonctions d'Affichage ---
+
+      function getBadgeClass(key, value) {
+        if (key.includes("conseil_sechage")) {
+          return value.includes("Éviter") ? "bg-danger" : "bg-success";
+        }
+        if (key.includes("risque_faon")) {
+          return parseFloat(value) > 7.0 ? "bg-warning text-dark" : "bg-info";
+        }
+        if (key.includes("maturite")) {
+          return value === "ATTEINTE" ? "bg-success" : "bg-danger";
+        }
+        return "bg-secondary";
+      }
+
+      function displayError(message) {
+        resultsCard.classList.add("d-none");
+        statusMessage.textContent = `Erreur : ${message}`;
+        statusMessage.className = "alert alert-danger mt-4";
+        statusMessage.classList.remove("d-none");
+      }
+
+      function displayResults(data) {
+        statusMessage.classList.add("d-none");
+        resultsCard.classList.remove("d-none");
+
+        const decision = data.decision_finale_fauche;
+        const justification =
+          data.justification || "Justification non fournie.";
+        const facteurs = data.facteurs_cles || {};
+
+        // 1. Affichage de la décision principale
+        decisionBlock.innerHTML = `
+            <h2 class="text-center mb-0">Décision de Fauche: <span class="fw-bold">${decision}</span></h2>
+        `;
+        // Application du style conditionnel
+        decisionBlock.classList.remove(
+          "decision-oui",
+          "decision-non",
+          "alert-secondary"
+        );
+        if (decision === "OUI") {
+          decisionBlock.classList.add("decision-oui");
+        } else if (decision === "NON") {
+          decisionBlock.classList.add("decision-non");
+        } else {
+          // Cas d'une réponse inattendue
+          decisionBlock.classList.add("alert-secondary");
+        }
+
+        // 2. Affichage de la justification
+        justificationText.textContent = justification;
+        justificationText.className =
+          decision === "NON" ? "alert alert-danger" : "alert alert-success";
+
+        // 3. Affichage des facteurs clés
+        facteursList.innerHTML = ""; // Vider la liste précédente
+        for (const key in facteurs) {
+          if (facteurs.hasOwnProperty(key)) {
+            const value = facteurs[key];
+            let label = key.replace(/_/g, " "); // Remplacer underscores par espaces
+            label = label.charAt(0).toUpperCase() + label.slice(1); // Majuscule
+
+            const listItem = document.createElement("li");
+            listItem.className =
+              "list-group-item d-flex justify-content-between align-items-center";
+            listItem.innerHTML = `
+                    <strong>${label} :</strong>
+                    <span class="badge ${getBadgeClass(
+                      key,
+                      value
+                    )} rounded-pill">${value}</span>
+                `;
+            facteursList.appendChild(listItem);
+          }
+        }
+      }
+
+      // --- Fonction d'Appel API Réel ---
+      async function fetchData(url) {
+        // Afficher le message de chargement
+        statusMessage.textContent =
+          "Analyse en cours... Veuillez patienter le temps que l'API Mère interroge ses APIs Filles.";
+        statusMessage.className = "alert alert-warning mt-4";
+        statusMessage.classList.remove("d-none");
+        resultsCard.classList.add("d-none");
+
+        try {
+          const response = await fetch(url);
+
+          if (!response.ok) {
+            // Gérer les erreurs HTTP (404, 500, etc.)
+            throw new Error(
+              `Erreur HTTP: ${response.status} - ${response.statusText}`
+            );
+          }
+
+          const data = await response.json();
+          displayResults(data);
+        } catch (error) {
+          // Gérer les erreurs réseau ou d'API
+          console.error("Erreur lors de la récupération des données:", error);
+          displayError(
+            `Échec de la connexion à l'API Mère. Vérifiez si le serveur Flask est lancé sur ${url}. Détail: ${error.message}`
+          );
+        }
+      }
+    </script>
+  </body>
+</html>

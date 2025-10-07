@@ -236,6 +236,46 @@ L'API mère attend un score et un conseil précis :
 }
 ```
 
+---
+
+---
+
+## 🤖 4. Acte IV : L'API Mère de Décision (Le Synthétiseur)
+
+Votre binôme (API Mère - B1) est responsable de l'API finale : celle qui prend la décision de faucher ou non. Cette API doit non seulement utiliser les données de ses "filles" (DDC, Météo, Faon) mais aussi intégrer une **nouvelle API externe** pour une donnée agronomique non-climatique.
+
+### Donnée Externe Supplémentaire : Le Sol
+
+Pour enrichir la décision, vous allez intégrer une API externe du projet **ISRIC World Soil Information** pour obtenir la **texture du sol** (ex: sableux, limoneux, argileux) de la parcelle.
+
+**Rôle de la donnée Sol :** Elle ne fait pas l'objet d'un Veto dans ce TP, mais elle doit impérativement être affichée dans le **résultat final** pour apporter un contexte agronomique et une justification complète.
+
+### Logique de Décision Finale
+
+L'API Mère doit prendre la décision selon les règles strictes suivantes (Logique de Veto) :
+
+1.  **Veto Météo :** Si l'API Météo Séchage renvoie **différent** de **"Fauchage Recommandé"** (c'est-à-dire Pluie ou Séchage Lent), la décision finale est **NON (Risque Météo)**.
+2.  **Veto Qualité/Maturité :** Si l'API DDC renvoie un `statut_maturite` **différent** de **"ATTEINTE"**, la décision finale est **NON (Maturité non atteinte)**.
+3.  **Veto Faune :** Si l'API Risque Faons renvoie un `risque_faon_niveau` **$> 7.0$**, la décision finale est **NON (Risque Faune Élevé)**.
+4.  **Décision OK :** Si aucune des conditions de Veto n'est remplie, la décision finale est **OUI (Conditions Optimales)**.
+
+### Contrat JSON de l'API Mère
+
+Cette API est la réponse finale au client. Elle doit indiquer la décision et résumer les facteurs considérés. **Notez l'inclusion du `type_sol` dans la justification et les facteurs.**
+
+```json
+{
+  "decision_finale_fauche": "OUI",
+  "justification": "Maturité atteinte, Météo OK, Risque Faune Faible. (Sol: Limon Franc)",
+  "facteurs_cles": {
+    "maturite_ddc": 655.2,
+    "conseil_sechage": "Fauchage Recommandé",
+    "risque_faon_niveau": 3.2,
+    "type_sol": "Limon Franc"
+  }
+}
+```
+
 ### 📚 Conclusion & ressources pour aller plus loin
 
 
