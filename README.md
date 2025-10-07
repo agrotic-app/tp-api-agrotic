@@ -1,8 +1,8 @@
-# 🚜 TP API pour AgroTIC : La Chaîne de Décision de Fauche
+# TP API pour AgroTIC : La Chaîne de Décision de Fauche
 
 Bienvenue dans cet atelier de **2h30** pour découvrir l'architecture et l'interconnexion des APIs dans un contexte agronomique.
 
-## 🎯 Votre Mission : Développeur(se) pour la F.A.U.C.H.E.
+## Votre Mission : Développeur(se) pour la F.A.U.C.H.E.
 
 Vous faites partie d'une équipe de développeurs AgroTIC. Votre client a besoin d'un outil d'aide à la décision pour optimiser la **fauche de ses prairies de foin**. La fauche est un processus critique qui demande de combiner plusieurs facteurs : la **maturité de la culture**, les **prévisions météo** et les **risques environnementaux/logistiques**.
 
@@ -18,7 +18,7 @@ Vous faites partie d'une équipe de développeurs AgroTIC. Votre client a besoin
 
 ---
 
-## 👥 Distribution des Rôles (Groupes de 3 et 4 binômes)
+## Distribution des Rôles (Groupes de 3 et 4 binômes)
 
 Chaque binôme sera responsable du développement et de la documentation de son API, en respectant le **contrat JSON** pour que l'API Mère puisse s'y connecter.
 
@@ -31,71 +31,78 @@ Chaque binôme sera responsable du développement et de la documentation de son 
 
 ---
 
-### ✅ Prérequis
+## Prérequis et Environnement de Travail
+
+### Prérequis Techniques
 
 Avant de commencer, assurez-vous d'avoir installé :
-1. [Python](https://www.python.org/) (version 3.8 ou supérieure)
-2. [Git](https://git-scm.com/)
-3. [Visual Studio Code](https://code.visualstudio.com/)
+1.  **[Python](https://www.python.org/)** (version 3.8 ou supérieure)
+2.  **[Git](https://git-scm.com/)**
+3.  **[Visual Studio Code](https://code.visualstudio.com/)**
 
-**Préparation avant l'atelier :**
-1. **Vérifiez vos outils** :
-   - Assurez-vous que Python 3.8+ est installé : `python --version`
-   - Assurez-vous que Git est installé : `git --version`
-   - Si Git n'est pas installé, téléchargez-le depuis [https://git-scm.com/](https://git-scm.com/).
-2. **Introduction à Git** :
-   - Git est un outil de gestion de versions
-   - Si vous obtenez une erreur (par exemple, "command not found"), vérifiez que Git est installé et ajouté au PATH de votre système.
-   - Si vous êtes novice avec Git, demandez de l'aide à votre formateur ou consultez [Git Basics](https://git-scm.com/book/fr/v2/D%C3%A9marrage-rapide-Au-sujet-du-contr%C3%B4le-de-version).
+### Mise en place de l'environnement
 
----
+1.  **Vérifiez vos outils :**
+    * Assurez-vous que Python 3.8+ est installé : `python --version`
+    * Assurez-vous que Git est installé : `git --version`
+    * *Si Git n'est pas installé ou non trouvé, téléchargez-le depuis le site officiel.*
 
-### ⚙️ 1. Mise en place de l'environnement
-
-1. **Clonez le projet :** Ouvrez un terminal et exécutez la commande suivante pour télécharger le projet sur votre machine.
+2.  **Clonez le projet :**
     ```bash
-    git clone https://github.com/agrotic-app/tp-api-agrotic
+    git clone [https://github.com/agrotic-app/tp-api-agrotic](https://github.com/agrotic-app/tp-api-agrotic)
     cd tp-api-agrotic
     ```
-   *Note :* Si vous rencontrez des problèmes d'accès au dépôt, contactez votre formateur.
+    *Note : Si vous êtes novice avec Git, demandez de l'aide à votre formateur.*
 
-2. **Installez l'extension VSCode :** Dans VSCode, allez dans l'onglet Extensions (Ctrl+Shift+X) et installez **REST Client** (par `huizhou.vs-code-rest`).
+3.  **Installez l'extension VSCode :** Dans VSCode, installez l'extension **REST Client** (par `huizhou.vs-code-rest`) pour tester facilement vos APIs.
 
-3. **Créez un environnement virtuel :** C'est une "boîte" isolée pour les dépendances de notre projet.
+4.  **Créez un environnement virtuel :**
     ```bash
     # La commande peut être 'python3' sur macOS/Linux
     python -m venv venv
     ```
 
-4. **Activez l'environnement virtuel :**
-   * **Sur Windows (cmd/powershell) :**
-       ```powershell
-       .\venv\Scripts\Activate
-       ```
-   * **Sur macOS / Linux :**
-       ```bash
-       source venv/bin/activate
-       ```
-   *(Votre terminal devrait maintenant afficher `(venv)` au début de la ligne)*
+5.  **Activez l'environnement virtuel :**
+    * **Sur Windows (cmd/powershell) :**
+        ```powershell
+        .\venv\Scripts\Activate
+        ```
+    * **Sur macOS / Linux :**
+        ```bash
+        source venv/bin/activate
+        ```
+    *(Votre terminal devrait afficher `(venv)`)*
 
-
-5. **Installez les librairies Python :**
+6.  **Installez les librairies Python :**
     ```bash
     pip install -r requirements.txt
     ```
 
+7. **Déterminer votre Adresse IP** (pour l'interconnexion)
 
-6.  **Exécutez l'application Flask :**
+    Pour que l'API Mère puisse communiquer avec les APIs Filles, vous devez connaître l'adresse IP de votre machine sur le réseau local.
+
+    Cette adresse IP doit remplacer la partie `192.168.1.XX` dans les variables `URL_DDC`, `URL_METEO`, etc., de votre fichier `api_fauche.py`.
+
+    | Système d'exploitation | Commande à exécuter | Note : Cherchez l'adresse IPv4/inet de votre connexion Wi-Fi/Ethernet |
+    | :--- | :--- | :--- |
+    | **Windows** (cmd/PowerShell) | `ipconfig` | Cherchez la ligne **`IPv4 Address`**. |
+    | **macOS** (Terminal) | `ifconfig` ou `ipconfig getifaddr en0` | Cherchez la ligne **`inet`**. |
+    | **Ubuntu/Linux** (Terminal) | `ip a` (ou `ip address`) | Cherchez la ligne **`inet`** dans la bonne interface (`wlan0` ou `eth0`). |
+
+    > **Exemple :** Si votre IP est `192.168.1.150`, l'API DDC de votre binôme doit être appelée via `http://192.168.1.150:5001/api-degres-jours`.
+
+
+8.  **Exécutez l'application Flask :**
     ```bash
     flask run --debug --host=0.0.0.0
     ```
-    Une fois le serveur démarré, vous devriez voir un message dans votre terminal indiquant qu'il est actif, généralement à l'adresse `http://127.0.0.1:5000`. Vous pouvez alors ouvrir cette URL dans votre navigateur pour voir votre application en action.
-
-Vous êtes prêt !
+    *Le serveur devrait être actif sur `http://127.0.0.1:5000` 
 
 ---
 
-## 🌡️ 1. Acte I : L'API Degrés-Jours Cumulés (DDC)
+
+## 1. Acte I : L'API Degrés-Jours Cumulés (DDC)
 
 Votre binôme (API Fille 1) doit développer l'API qui détermine la **maturité** du foin. Pour cela, vous allez calculer les **Degrés-Jours Cumulés (DDC)**, une mesure thermique du développement des plantes.
 
@@ -152,13 +159,13 @@ Vous pouvez utiliser la fonction native `max(a, b)` pour implémenter la partie 
 
 ---
 
-## ☁️ 2. Acte II : L'API Météo Séchage (Logistique)
+## 2. Acte II : L'API Météo Séchage (Logistique)
 
 Votre binôme (API Fille 2) est responsable de l'évaluation du **risque logistique** lié à la météo. L'objectif est de s'assurer que, si l'on fauche aujourd'hui, les **48 prochaines heures** permettront au foin de sécher correctement sans être mouillé, ce qui dégraderait sa qualité (perte d'éléments nutritifs, risque de moisissure).
 
 **Votre mission :** Modifier le script `meteo_sechage.py` pour consommer l'API **Open-Meteo Prévisions** (données futures) et évaluer le risque de pluie et l'efficacité du séchage sur les 48 heures à venir.
 
-### Exercice 3 : Construire la Requête de Prévisions 
+#### Exercice 3 : Construire la Requête de Prévisions 
 
 1.  Ouvrez le fichier `meteo_sechage.py`.
 2.  **Recherchez la documentation Open-Meteo :** Trouvez l'**URL** de l'API dédiée aux **prévisions** (l'URL par défaut pour le futur) et les **paramètres** nécessaires pour obtenir les prévisions **horaires** sur les 48 prochaines heures.
@@ -168,7 +175,7 @@ Votre binôme (API Fille 2) est responsable de l'évaluation du **risque logisti
     * La latitude, la longitude et le fuseau horaire.
 4.  Exécutez le script : `python meteo_sechage.py`.
 
-### Exercice 4 : Calculer le Risque de Séchage 
+#### Exercice 4 : Calculer le Risque de Séchage 
 
 1.  Ouvrez `meteo_sechage.py` et trouvez la section `TODO: Calcul du Risque`.
 2.  **Inspectez la réponse JSON :** Trouvez les **clés exactes** des données horaires : les **précipitations** (en mm) et l'**humidité relative de l'air** (en %).
@@ -205,13 +212,13 @@ Vous pouvez utiliser une boucle `for` simple et des compteurs pour évaluer le n
 
 ---
 
-## 🦌 3. Acte III : L'API Risque Faons (Biodiversité)
+## 3. Acte III : L'API Risque Faons (Biodiversité)
 
 Votre binôme (API Fille 3, pour le groupe de 4 binômes) est chargé d'évaluer le **risque faunistique**. La fauche est une cause majeure de mortalité des faons de chevreuil qui se cachent dans les hautes herbes au printemps.
 
 Ce modèle utilise des données **simulées** basées sur des critères **écologiques** pour créer un score de risque pondéré.
 
-### Règle de Modélisation du Risque Faons
+#### Règle de Modélisation du Risque Faons
 
 L'API doit calculer un **score de risque final sur une échelle de 1 à 10** en combinant trois critères :
 
@@ -240,17 +247,17 @@ L'API mère attend un score et un conseil précis :
 
 ---
 
-## 🤖 4. Acte IV : L'API Mère de Décision (Le Synthétiseur)
+## 4. Acte IV : L'API Mère de Décision (Le Synthétiseur)
 
 Votre binôme (API Mère - B1) est responsable de l'API finale : celle qui prend la décision de faucher ou non. Cette API doit non seulement utiliser les données de ses "filles" (DDC, Météo, Faon) mais aussi intégrer une **nouvelle API externe** pour une donnée agronomique non-climatique.
 
-### Donnée Externe Supplémentaire : Le Sol
+#### Donnée Externe Supplémentaire : Le Sol
 
 Pour enrichir la décision, vous allez intégrer une API externe du projet **ISRIC World Soil Information** pour obtenir la **texture du sol** (ex: sableux, limoneux, argileux) de la parcelle.
 
 **Rôle de la donnée Sol :** Elle ne fait pas l'objet d'un Veto dans ce TP, mais elle doit impérativement être affichée dans le **résultat final** pour apporter un contexte agronomique et une justification complète.
 
-### Logique de Décision Finale
+#### Logique de Décision Finale
 
 L'API Mère doit prendre la décision selon les règles strictes suivantes (Logique de Veto) :
 
@@ -259,7 +266,7 @@ L'API Mère doit prendre la décision selon les règles strictes suivantes (Logi
 3.  **Veto Faune :** Si l'API Risque Faons renvoie un `risque_faon_niveau` **$> 7.0$**, la décision finale est **NON (Risque Faune Élevé)**.
 4.  **Décision OK :** Si aucune des conditions de Veto n'est remplie, la décision finale est **OUI (Conditions Optimales)**.
 
-### Contrat JSON de l'API Mère
+#### Contrat JSON de l'API Mère
 
 Cette API est la réponse finale au client. Elle doit indiquer la décision et résumer les facteurs considérés. **Notez l'inclusion du `type_sol` dans la justification et les facteurs.**
 
@@ -276,7 +283,7 @@ Cette API est la réponse finale au client. Elle doit indiquer la décision et r
 }
 ```
 
-### 📚 Conclusion & ressources pour aller plus loin
+## Conclusion & ressources pour aller plus loin
 
 
 
