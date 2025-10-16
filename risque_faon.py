@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+from datetime import date
+
 
 # --- ⚙️ Configuration du Modèle ---
 # Définition des bornes de risque (par défaut, pour une année "normale")

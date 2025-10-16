@@ -1,108 +1,46 @@
-from flask import Flask, request, jsonify, abort
-import requests
+from flask import Flask, jsonify, request
+from api_fauche_solution import decision_fauche_solution
+from degres_jours_solution import calculate_ddc_solution
+from meteo_sechage_solution import meteo_sechage_solution
+from risque_faon_solution import calculer_risque_faon_solution
 
 app = Flask(__name__)
 
-# Crop water requirements (mm/day)
-CROP_WATER_NEEDS = {
-    "mais": 5,
-    "vigne": 3,
-    "ble": 4
-}
+@app.route("/api-decision-fauche", methods=["GET"])
+def api_decision_fauche():
+    lat = float(request.args.get("lat", 43.6119))
+    lon = float(request.args.get("lon", 3.8772))
+    date_jour = request.args.get("date")  # ISO format or None
+    result = decision_fauche_solution(lat=lat, lon=lon, date_jour=date_jour)
+    return jsonify(result)
 
-@app.route('/')
-def home():
-    return "Bienvenue sur l'API AgroTIC !"
+@app.route("/api-degres-jours", methods=["GET"])
+@app.route("/api-degres-jour", methods=["GET"])
+def api_degres_jours():
+    lat = float(request.args.get("lat", 43.6119))
+    lon = float(request.args.get("lon", 3.8772))
+    start = request.args.get("start")  # ISO date or None
+    end = request.args.get("end")      # ISO date or None
+    result = calculate_ddc_solution(lat=lat, lon=lon, start_date=start, end_date=end)
+    return jsonify(result)
 
-@app.route('/conseil-irrigation')
-def irrigation_advice():
-    # Get parameters from query
-    lat = request.args.get('lat')
-    lon = request.args.get('lon')
-    crop_type = request.args.get('type_culture', 'mais')
-    
-    # Validate parameters
-    if not lat or not lon:
-        abort(400, description="Paramètres latitude ou longitude manquants")
-    
-    try:
-        lat = float(lat)
-        lon = float(lon)
-    except ValueError:
-        abort(400, description="Latitude et longitude doivent être des nombres valides")
-    
-    if crop_type not in CROP_WATER_NEEDS:
-        abort(400, description=f"Type de culture invalide. Choisissez parmi {list(CROP_WATER_NEEDS.keys())}")
-    
-    # Call Open-Meteo API
-    url = "https://api.open-meteo.com/v1/forecast"
-    params = {
-        "latitude": lat,
-        "longitude": lon,
-        "current_weather": "true",
-        "daily": ["precipitation_sum", "et0_fao_evapotranspiration"],
-        "timezone": "Europe/Paris"
-    }
-    
-    response = requests.get(url, params=params)
-    if response.status_code != 200:
-        abort(500, description="Échec de la récupération des données météo")
-    
-    data = response.json()
-    temperature = data.get('current_weather', {}).get('temperature', 'N/A')
-    precipitation = data.get('daily', {}).get('precipitation_sum', [0])[0]
-    evapotranspiration = data.get('daily', {}).get('et0_fao_evapotranspiration', [0])[0]
-    
-    # Irrigation logic
-    water_need = CROP_WATER_NEEDS[crop_type]
-    advice = "Irrigation recommandée" if evapotranspiration > 4 and precipitation < water_need else "Pas d'irrigation nécessaire"
-    
-    return jsonify({
-        "latitude": lat,
-        "longitude": lon,
-        "crop_type": crop_type,
-        "temperature": temperature,
-        "precipitation": precipitation,
-        "evapotranspiration": evapotranspiration,
-        "advice": advice
-    })
+@app.route("/api-meteo-sechage", methods=["GET"])
+@app.route("/api-meteo", methods=["GET"])
+def api_meteo_sechage():
+    lat = float(request.args.get("lat", 43.6119))
+    lon = float(request.args.get("lon", 3.8772))
+    horizon = int(request.args.get("horizon", 48))
+    result = meteo_sechage_solution(lat=lat, lon=lon, horizon_hours=horizon)
+    return jsonify(result)
 
-@app.route('/precipitation-data')
-def precipitation_data():
-    # Get latitude and longitude from query parameters
-    lat = request.args.get('lat')
-    lon = request.args.get('lon')
-    
-    if not lat or not lon:
-        abort(400, description="Paramètres latitude ou longitude manquants")
-    
-    try:
-        lat = float(lat)
-        lon = float(lon)
-    except ValueError:
-        abort(400, description="Latitude et longitude doivent être des nombres valides")
-    
-    # Call Open-Meteo API for 5 days of precipitation
-    url = "https://api.open-meteo.com/v1/forecast"
-    params = {
-        "latitude": lat,
-        "longitude": lon,
-        "daily": "precipitation_sum",
-        "timezone": "Europe/Paris",
-        "forecast_days": 5
-    }
-    
-    response = requests.get(url, params=params)
-    if response.status_code != 200:
-        abort(500, description="Échec de la récupération des données météo")
-    
-    data = response.json()
-    precipitation = data.get('daily', {}).get('precipitation_sum', [0] * 5)
-    
-    return jsonify({
-        "labels": [f"Jour {i+1}" for i in range(5)],
-        "precipitation": precipitation
-    })
+@app.route("/api-risque-faon", methods=["GET"])
+@app.route("/api-risque-faoen", methods=["GET"])
+def api_risque_faon():
+    date_str = request.args.get("date")
+    voisinage = request.args.get("voisinage", "champ_ouvert")
+    annee_froide = request.args.get("annee_froide", "false").lower() in ("1","true","yes")
+    result = calculer_risque_faon_solution(date_str=date_str, voisinage=voisinage, annee_froide=annee_froide)
+    return jsonify(result)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

@@ -10,9 +10,9 @@ DATE_JOUR = date.today().isoformat()
 
 # URLs MOCK (à décommenter pour les appels réels)
 # TODO: Remplacer l'IP par les adresses réelles des binômes !
-URL_DDC = "http://192.168.1.XX:5001/api-degres-jours"
-URL_METEO = "http://192.168.1.XX:5002/api-meteo-sechage"
-URL_FAON = "http://192.168.1.XX:5003/api-risque-faon"
+URL_DDC = "http://192.168.1.XX:5000/api-degres-jours"
+URL_METEO = "http://192.168.1.XX:5000/api-meteo-sechage"
+URL_FAON = "http://192.168.1.XX:5000/api-risque-faon"
 # TODO: Chercher l'URL de l'API ISRIC (Sol)
 URL_ISRIC = "..."
 
