@@ -342,5 +342,4 @@ L'API Mère doit prendre la décision selon les règles strictes suivantes (**Lo
 Félicitations ! Vous avez consommé une API et créé la vôtre en moins de 3 heures. Vous avez découvert les concepts de **route**, de **paramètres**, de **JSON** et vu comment des services peuvent communiquer entre eux.
 
 * **Documentation de Flask :** [Welcome to Flask](https://flask.palletsprojects.com/)
-* **Documentation de Requests :** [Requests Quickstart](https://requests.readthedocs.io/en/latest/user/quickstart/)
 * **Une liste d'APIs publiques amusantes :** [Public APIs](https://github.com/public-apis/public-apis)
