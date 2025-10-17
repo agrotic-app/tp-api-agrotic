@@ -1,80 +1,77 @@
 import requests
 from datetime import date
 
-def calculate_ddc(lat: float = 43.6119,
-                  lon: float = 3.8772):
-    """Calculate cumulative degree-days (DDC) between two dates using Open-Meteo historical data.
-
-    Parameters:
-        lat: latitude in decimal degrees
-        lon: longitude in decimal degrees
-
-    Returns:
-        A dict with keys: 'start_date', 'end_date', 'ddc', 'temperature_count', 'advice'
+def calculate_ddc(lat: float = 43.6119, lon: float = 3.8772):
+    """
+    Calcule les degrés-jours cumulés (DDC) entre le 1er mars et la date du jour,
+    en utilisant les données historiques de l'API Open-Meteo.
     """
 
     # --- ⚙️ Configuration Agronomique ---
     # Température de base pour les graminées de foin (en °C)
-    TEMPERATURE_BASE = 6
+    TEMPERATURE_BASE = 6  # °C
     # Seuil de DDC pour une maturité optimale (arbitraire pour l'exercice)
-    SEUIL_DDC_MATURITE = 600
+    SEUIL_DDC_MATURITE = 600  # °C.jours
 
+    # --- 🧩 Exercice 1 : Construire la requête Open-Meteo Archive ---
     # TODO: Chercher l'URL de l'API Open-Meteo pour les données HISTORIQUES
-    URL_HISTORIQUE = "..." 
+    URL_HISTORIQUE = "..."  
 
-    # # TODO: Période de calcul : du 1er Mars de l'année en cours jusqu'à aujourd'hui
+    # TODO: Définir les dates de calcul
+    # Le calcul commence le 1er mars de l'année en cours jusqu'à aujourd'hui
     START_DATE = 0
     END_DATE = 0
 
-    # --- 🛠️ Exercice 1 : Construire la Requête ---
     params = {
-        # TODO: Ajouter les paramètres pour la latitude, la longitude, le fuseau horaire
-        # TODO: Ajouter les dates de début et de fin 
-        # TODO: Spécifier le paramètre 'daily' avec la bonne clé pour la température moyenne
-        "latitude": lat,
-        "longitude": lon,
-        "timezone": "Europe/Paris", 
-        "start_date": START_DATE,
-        "end_date": END_DATE,
-        # "daily": ["clé_à_trouver"], 
+        # TODO: Ajouter latitude, longitude, fuseau horaire
+        # TODO: Ajouter les dates de début et de fin
+        # TODO: Spécifier le paramètre 'daily' avec la clé de température moyenne
+        "timezone": "Europe/Paris",
     }
 
     print(f"--- Calcul du DDC entre le {START_DATE} et le {END_DATE} ---")
 
     try:
         response = requests.get(URL_HISTORIQUE, params=params)
-        response.raise_for_status() # Lève une exception si le statut HTTP est 4xx ou 5xx
+        response.raise_for_status()
         data = response.json()
 
-        # --- 🛠️ Exercice 2 : Calculer le DDC ---
+        # --- 🧮 Exercice 2 : Calcul du DDC ---
         DDC_cumule = 0
 
-        # TODO: Trouver la clé exacte des températures dans la réponse JSON (data)
-        # La structure est typiquement data['daily']['clé_exacte']
+        # TODO: Trouver la clé exacte des températures dans la réponse JSON
         temperatures = data.get('daily', {}).get('clé_à_trouver', [])
 
         if not temperatures:
-            print("Erreur : Aucune donnée de température récupérée. Vérifiez votre URL ou vos paramètres.")
+            print("⚠️  Aucune donnée de température récupérée. Vérifiez vos paramètres.")
         else:
             for T_moyenne in temperatures:
                 # TODO: Implémenter la formule du DDC : max(0, T_moyenne - T_base)
-                degre_jour = ... 
+                degre_jour = ...
                 DDC_cumule += degre_jour
 
-            # --- Affichage du résultat ---
+            # --- Résultat intermédiaire ---
             print("\nRésultat du Calcul :")
-            print(f"DDC cumulé ({START_DATE} -> {END_DATE}) : {DDC_cumule:.2f} °C.jours")
+            print(f"DDC cumulé ({START_DATE} → {END_DATE}) : {DDC_cumule:.2f} °C.jours")
 
-            # --- Conseil Agronomique ---
+            # --- Conseil agronomique ---
             if DDC_cumule > SEUIL_DDC_MATURITE:
-                print(f"-> CONSEIL MATURITÉ : ATTEINTE ({DDC_cumule:.2f} > {SEUIL_DDC_MATURITE}).")
+                statut = "ATTEINTE"
+                print(f"→ Maturité atteinte ({DDC_cumule:.2f} > {SEUIL_DDC_MATURITE})")
             else:
-                print(f"-> CONSEIL MATURITÉ : PAS ENCORE ATTEINTE ({DDC_cumule:.2f} < {SEUIL_DDC_MATURITE}).")
+                statut = "PAS ENCORE ATTEINTE"
+                print(f"→ Maturité non atteinte ({DDC_cumule:.2f} < {SEUIL_DDC_MATURITE})")
 
+            # TODO: Retourner un dictionnaire avec les informations principales
+            return {
+                # "statut_maturite": ...,
+                # "ddc_cumule": ...,
+                # "seuil_maturite": ...,
+            }
 
     except requests.exceptions.RequestException as e:
-        print(f"\nErreur lors de la connexion à l'API Open-Meteo : {e}")
+        print(f"Erreur lors de la connexion à l'API Open-Meteo : {e}")
     except KeyError as e:
-        print(f"\nErreur de structure des données JSON. Clé manquante : {e}. Assurez-vous que les paramètres sont corrects.")
+        print(f"Erreur de structure des données JSON. Clé manquante : {e}")
     except Exception as e:
-        print(f"\nUne erreur inattendue est survenue : {e}")
+        print(f"Une erreur inattendue est survenue : {e}")

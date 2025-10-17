@@ -104,184 +104,236 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 ## 1. Acte I : L'API Degrés-Jours Cumulés (DDC)
 
-Votre binôme (API Fille 1) doit développer l'API qui détermine la **maturité** du foin. Pour cela, vous allez calculer les **Degrés-Jours Cumulés (DDC)**, une mesure thermique du développement des plantes.
+Votre binôme (API Fille 1) doit développer l’API qui détermine la **maturité** du foin.  
+Pour cela, vous allez calculer les **Degrés-Jours Cumulés (DDC)**, une mesure thermique du développement des plantes.
 
 $$\text{DDC} = \sum (\text{Température Moyenne} - \text{Température de Base})$$
 
-Pour les graminées de foin, la **Température de Base ($T_b$)** est souvent fixée à $\mathbf{6^{\circ}C}$.
+Pour les graminées de foin, la **Température de Base ($T_b$)** est fixée à **6 °C**.
 
-**Votre mission :** Modifier le script `degres_jours.py` pour consommer l'API **Open-Meteo Archive** (données historiques) et calculer le DDC entre le **1er mars** de l'année en cours et la date du jour.
+---
 
-### Exercice 1 : Construire et Consommer la Requête Historique 
+### 🔹 Objectif
+Calculer le DDC à partir des **données historiques Open-Meteo** (sous-domaine `archive-api`) entre le **1er mars** de l’année en cours et la date du jour, puis indiquer si la maturité est atteinte.
 
-1.  Ouvrez le fichier `degres_jours.py`.
-2.  **Recherchez la documentation Open-Meteo :** Trouvez l'**URL** de l'API dédiée aux **données historiques** (l'URL par défaut est pour les prévisions) et les **paramètres** nécessaires pour obtenir les températures moyennes journalières (`daily`).
-3.  **Votre mission :** Complétez la variable `URL_HISTORIQUE` et le dictionnaire `params` dans `degres_jours.py`. Les paramètres doivent inclure :
-    * Les **températures moyennes journalières**.
-    * Les dates de début et de fin.
-    * La latitude, la longitude et le fuseau horaire.
-4.  Exécutez le script : `python degres_jours.py`.
+---
 
-### Exercice 2 : Calculer le DDC et Afficher la Maturité 
+### 🧩 Exercice 1 : Construire et consommer la requête historique
 
-1.  Ouvrez `degres_jours.py` et trouvez la section `TODO: Calcul du DDC`.
-2.  **Inspectez la réponse JSON :** À partir du `data` (la réponse JSON), trouvez la **clé exacte** qui contient la liste des températures moyennes.
-3.  **Implémentez la logique de DDC :**
-    * Initialisez `DDC_cumule = 0`.
-    * Pour chaque température (`T_moyenne`) :
-        * Calculez le Degré-Jour du jour en appliquant la formule
-        * Ajoutez cette valeur au `DDC_cumule`.
-4.  Affichez le DDC final et le conseil de maturité.
-L'API mère attend une réponse au format JSON qui indique clairement l'état de maturité :
+1. Ouvrez le fichier `degres_jours.py`.  
+2. **Cherchez la documentation** Open-Meteo pour l’API **Archive** et trouvez :
+   - l’**URL de base** pour les données historiques (`archive-api.open-meteo.com`),
+   - le paramètre `daily` correspondant à la température moyenne (`temperature_2m_mean`).
+3. Complétez les variables :
+   - `URL_HISTORIQUE`
+   - `params` (latitude, longitude, timezone, dates)
+4. Exécutez le script :  
+   ```bash
+   python degres_jours.py
 
-```json
-{
-  "statut_maturite": "ATTEINTE",
-  "ddc_cumule": 650.45,
-  "seuil_maturite": 600
-}
-```
+### 🧮 Exercice 2 : Calculer le DDC et Afficher la Maturité
+
+Complétez la section `# TODO: Calcul du DDC` :
+
+1. **Extraire la liste des températures** depuis la clé `data['daily']['temperature_2m_mean']`.
+2. **Appliquer la formule du DDC** :  
+   ```
+   DDC_jour = max(0, T_moyenne - T_b)
+   ```
+3. **Sommer** tous les DDC journaliers pour obtenir `DDC_cumule`.
+4. **Déterminer le statut de maturité** selon le seuil :
+   - si `DDC_cumule > 600` → **ATTEINTE**
+   - sinon → **PAS ENCORE ATTEINTE**
+5. **Retourner le résultat au format JSON**, par exemple :
+   ```json
+   {
+     "statut_maturite": "ATTEINTE",
+     "ddc_cumule": 650.45,
+     "seuil_maturite": 600
+   }
+   ```
+
+---
+
+💡 **Indices**
 
 <details>
-<summary>💡 Indice 1 (URL et Paramètre)</summary>
-L'API d'archive est sur le sous-domaine `archive-api`. Le paramètre pour les températures moyennes journalières se trouve dans la section `daily`.
+<summary>Indice 1 – URL et Paramètre</summary>
+L’API d’archive est sur le sous-domaine `archive-api`.  
+Le paramètre pour les températures moyennes journalières se trouve dans la section `daily`.
 </details>
 
 <details>
-<summary>💡 Indice 2 (Clé de la donnée)</summary>
+<summary>Indice 2 – Clé de la donnée</summary>
 La clé pour les températures moyennes est `temperature_2m_mean`.
 </details>
 
 <details>
-<summary>💡 Indice 3 (Formule Python)</summary>
-Vous pouvez utiliser la fonction native `max(a, b)` pour implémenter la partie $\max(0, ...)$ de la formule.
+<summary>Indice 3 – Formule Python</summary>
+Vous pouvez utiliser `max(a, b)` pour implémenter la partie `max(0, ...)` de la formule.
 </details>
 
 ---
 
-## 2. Acte II : L'API Météo Séchage (Logistique)
+## 🌾 Acte II : L'API Séchage du Foin (Agrométéo)
 
-Votre binôme (API Fille 2) est responsable de l'évaluation du **risque logistique** lié à la météo. L'objectif est de s'assurer que, si l'on fauche aujourd'hui, les **48 prochaines heures** permettront au foin de sécher correctement sans être mouillé, ce qui dégraderait sa qualité (perte d'éléments nutritifs, risque de moisissure).
+Le séchage du foin dépend fortement des conditions météorologiques à court terme.  
+L’objectif de cette API est de fournir un **conseil opérationnel** sur la faisabilité du séchage dans les 48 prochaines heures, à partir des prévisions météo issues de **l’API Open-Meteo Forecast**.
 
-**Votre mission :** Modifier le script `meteo_sechage.py` pour consommer l'API **Open-Meteo Prévisions** (données futures) et évaluer le risque de pluie et l'efficacité du séchage sur les 48 heures à venir.
+### 🔍 Données utilisées
+Les variables horaires suivantes seront extraites depuis l’API :
+- `precipitation_sum` (mm) : cumul des précipitations horaires
+- `relative_humidity_2m` (%) : humidité relative de l’air à 2 mètres
+- `temperature_2m` (°C) *(optionnel)*
 
-#### Exercice 3 : Construire la Requête de Prévisions 
+###  Seuils agronomiques de référence
+| Facteur | Variable | Seuil | Interprétation |
+|----------|-----------|--------|----------------|
+| Risque de pluie | `precipitation_sum > 0.1 mm` | Risque de séchage impossible |
+| Humidité élevée | `relative_humidity_2m > 70 %` | Séchage lent |
+| Cumul d’heures humides | `> 30 heures / 48` | Risque global défavorable |
 
-1.  Ouvrez le fichier `meteo_sechage.py`.
-2.  **Recherchez la documentation Open-Meteo :** Trouvez l'**URL** de l'API dédiée aux **prévisions** (l'URL par défaut pour le futur) et les **paramètres** nécessaires pour obtenir les prévisions **horaires** sur les 48 prochaines heures.
-3.  **Votre mission :** Complétez la variable `URL_PREVISIONS` et le dictionnaire `params` dans `meteo_sechage.py`. Les paramètres doivent inclure :
-    * Les prévisions **horaires** pour les **précipitations** (cumul de pluie) et l'**humidité relative de l'air**.
-    * La durée : **48 heures**.
-    * La latitude, la longitude et le fuseau horaire.
-4.  Exécutez le script : `python meteo_sechage.py`.
+###  Logique de décision
+L’analyse suit la hiérarchie suivante :
+1. **Pluie prévue** → Séchage non recommandé  
+2. **Pas de pluie mais humidité élevée sur > 30h** → Séchage lent / déconseillé  
+3. **Humidité modérée et pas de pluie** → Conditions favorables
 
-#### Exercice 4 : Calculer le Risque de Séchage 
+   🧪 Exemple de sortie attendue
 
-1.  Ouvrez `meteo_sechage.py` et trouvez la section `TODO: Calcul du Risque`.
-2.  **Inspectez la réponse JSON :** Trouvez les **clés exactes** des données horaires : les **précipitations** (en mm) et l'**humidité relative de l'air** (en %).
-3.  Règle de Décision Agronomique
+   ```json
+   {
+      "risque_sechage": "élevé",
+      "conseil_sechage": "Risque de pluie détecté — reporter la fauche.",
+      "resume": "Prévision de pluie dans les 48h et 35h d'humidité > 70%."
+   }
+   ```
 
-La décision doit être prise selon la hiérarchie de risque suivante :
-
-1.  **Priorité 1 (Pluie) :** S'il y a **une seule heure** avec une précipitation $> 0.1 \text{ mm}$ sur les 48h, le fauchage est **À Éviter (Raison : Pluie)**.
-2.  **Priorité 2 (Séchage Lent) :** S'il y a **plus de 30 heures** avec une humidité relative de l'air supérieure à $70\%$ sur les 48h, le fauchage est **À Éviter (Raison : Séchage lent)**.
-3.  **OK :** Sinon (aucune des conditions ci-dessus n'est remplie), le fauchage est **Fauchage Recommandé**.
-4.  Affichez la conclusion : **Fauchage Recommandé** ou **À Éviter (Raison : Pluie / Séchage lent)**.
-```json
-{
-  "conseil_sechage": "Fauchage Recommandé",
-  "justification": "Moins de 30h de forte humidité et aucune pluie prévue."
-}
-```
+💡 **Indices**
 
 <details>
-<summary>💡 Indice 1 (URL et Paramètres)</summary>
-L'URL de base pour les prévisions est `https://api.open-meteo.com/v1/forecast`. Vous devrez utiliser le paramètre `hourly` et la limite de temps `forecast_days=2`.
+<summary>Indice 1 – API utilisée</summary>
+Cette API utilise l’endpoint `/forecast` d’Open-Meteo.
 </details>
 
 <details>
-<summary>💡 Indice 2 (Clés de la donnée)</summary>
-Les clés pour les données horaires sont `rain` ou `precipitation` et `relative_humidity_2m`.
+<summary>Indice 2 – Données à récupérer</summary>
+Les paramètres `hourly=relative_humidity_2m,precipitation` permettent de récupérer les valeurs utiles.
 </details>
 
 <details>
-<summary>💡 Indice 3 (Logique Python)</summary>
-Vous pouvez utiliser une boucle `for` simple et des compteurs pour évaluer le nombre d'heures concernées par un risque.
+<summary>Indice 3 – Logique de décision</summary>
+Comptez le nombre d’heures avec humidité > 70 %.  
+S’il dépasse 30 heures ou s’il pleut dans les 48 h, le risque est **élevé**.
 </details>
 
 
 ---
 
-## 3. Acte III : L'API Risque Faons (Biodiversité)
+## 🦌 Acte III : L'API Risque Faons (Biodiversité)
 
-Votre binôme (API Fille 3, pour le groupe de 4 binômes) est chargé d'évaluer le **risque faunistique**. La fauche est une cause majeure de mortalité des faons de chevreuil qui se cachent dans les hautes herbes au printemps.
-
-Ce modèle utilise des données **simulées** basées sur des critères **écologiques** pour créer un score de risque pondéré.
-
-#### Règle de Modélisation du Risque Faons
-
-L'API doit calculer un **score de risque final sur une échelle de 1 à 10** en combinant trois critères :
-
-1.  **Période de Risque (Base) :** La période de mise bas des faons est la plus critique.
-    * **Niveau 1 (Faible) :** En dehors de la période critique. (Score de base : 2)
-    * **Niveau 2 (Moyen) :** Début ou fin de période (ex: 15-31 mai / 21-30 juin). (Score de base : 5)
-    * **Niveau 3 (Élevé) :** Pleine période de mise bas (ex: 1er-20 juin). (Score de base : 8)
-2.  **Voisinage (Multiplicateur) :** La proximité d'un habitat augmente le risque.
-    * Parcelle bordée de **Forêt / Haies** : Multiplieur **x 1.5**
-    * **Champ ouvert** : Multiplieur **x 1.0**
-3.  **Décalage Saisonnier (Ajustement) :** Une année froide décale la mise bas.
-    * Si **Année précédente froide** (simulé par `annee_froide=True`) : Décalage de **+ 7 jours** pour toutes les bornes de la Période de Risque.
-
-
-L'API mère attend un score et un conseil précis :
-
-```json
-{
-  "risque_faon_niveau": 9.5, // Score de 1 à 10
-  "conseil_faune": "Fauche à haut risque - Utiliser un système d'effarouchement",
-  "justification": "Pleine période de risque (8) multiplié par la proximité de la forêt (x1.5)."
-}
-```
+L’objectif de cette API est d’évaluer le **risque faunistique** lors des opérations de fauche, en particulier pour les **faons de chevreuil** cachés dans les herbes hautes.  
+Cette estimation repose sur des **règles écologiques simplifiées**, basées sur la période de mise bas, le type de voisinage, et les conditions saisonnières.
 
 ---
+
+### ⚙️ Données d’entrée
+L’API recevra trois paramètres :
+- `date_fauche` : date prévue de la fauche (format ISO : `AAAA-MM-JJ`)
+- `type_voisinage` : type d’habitat autour de la parcelle (`foret`, `haie_bocagere`, `champ_ouvert`)
+- `annee_froide` : booléen indiquant si l’hiver précédent était rigoureux (impacte le calendrier biologique)
+
+---
+
+### 🧠 Règles du modèle
+
+#### 1. Période de Risque (Score de base)
+| Niveau | Période | Score |
+|---------|----------|--------|
+| Faible | En dehors du 15 mai – 30 juin | 2 |
+| Moyen | 15–31 mai **ou** 21–30 juin | 5 |
+| Élevé | 1–20 juin | 8 |
+
+#### 2. Voisinage (Multiplicateur)
+| Type de voisinage | Multiplicateur |
+|--------------------|----------------|
+| Forêt | × 1.5 |
+| Haie bocagère | × 1.3 |
+| Champ ouvert | × 1.0 |
+
+#### 3. Décalage Saisonnier
+Si `annee_froide=True`, **toutes les bornes sont décalées de +7 jours**  
+(les dates de mise bas sont retardées).
+
+---
+
+### 🧮 Calcul attendu
+1. Ajuster les dates si `annee_froide=True`
+2. Déterminer le score de base selon la période
+3. Appliquer le multiplicateur de voisinage
+4. Calculer `score_final = score_base × multiplicateur`
+5. Limiter le score à un maximum de 10.0
+6. Fournir le **conseil** selon la grille suivante :
+
+| Score final | Niveau de risque | Conseil |
+|--------------|------------------|----------|
+| ≥ 7.0 | Élevé | Fauche à haut risque — utiliser un système d’effarouchement ou de balayage. |
+| ≥ 4.0 | Modéré | Fauche à risque modéré — procéder avec vigilance. |
+| < 4.0 | Faible | Fauche à risque faible — procéder normalement. |
+
+
+-  💬 Exemple de sortie attendue
+
+   ```json
+      {
+      "risque_faon_niveau": 9.5,
+      "conseil_faune": "Fauche à haut risque - Utiliser un système d'effarouchement ou de balayage.",
+      "justification": "Score de base (8) ajusté par le voisinage (1.5x). Décalage saisonnier : NON."
+      }
+   ```
 
 ---
 
 ## 4. Acte IV : L'API Mère de Décision (Le Synthétiseur)
 
-Votre binôme (API Mère - B1) est responsable de l'API finale : celle qui prend la décision de faucher ou non. Cette API doit non seulement utiliser les données de ses "filles" (DDC, Météo, Faon) mais aussi intégrer une **nouvelle API externe** pour une donnée agronomique non-climatique.
+Votre binôme (API Mère - B1) est responsable de l'API finale : celle qui prend la décision de faucher ou non.  
+Cette API doit non seulement utiliser les données de ses "filles" (DDC, Météo, Faon) mais aussi intégrer une **nouvelle API externe** pour une donnée agronomique non-climatique.
 
-#### Donnée Externe Supplémentaire : Le Sol
+### 🔹 Donnée Externe Supplémentaire : Le Sol
 
 Pour enrichir la décision, vous allez intégrer une API externe du projet **ISRIC World Soil Information** pour obtenir la **texture du sol** (ex: sableux, limoneux, argileux) de la parcelle.
 
-**Rôle de la donnée Sol :** Elle ne fait pas l'objet d'un Veto dans ce TP, mais elle doit impérativement être affichée dans le **résultat final** pour apporter un contexte agronomique et une justification complète.
+➡️ **Rôle de la donnée Sol :**  
+Elle ne fait pas l'objet d'un veto, mais doit impérativement être **affichée dans la justification finale** pour apporter un contexte agronomique.
 
-#### Logique de Décision Finale
+### 🔹 Logique de Décision Finale
 
-L'API Mère doit prendre la décision selon les règles strictes suivantes (Logique de Veto) :
+L'API Mère doit prendre la décision selon les règles strictes suivantes (**Logique de Veto**) :
 
-1.  **Veto Météo :** Si l'API Météo Séchage renvoie **différent** de **"Fauchage Recommandé"** (c'est-à-dire Pluie ou Séchage Lent), la décision finale est **NON (Risque Météo)**.
-2.  **Veto Qualité/Maturité :** Si l'API DDC renvoie un `statut_maturite` **différent** de **"ATTEINTE"**, la décision finale est **NON (Maturité non atteinte)**.
-3.  **Veto Faune :** Si l'API Risque Faons renvoie un `risque_faon_niveau` **$> 7.0$**, la décision finale est **NON (Risque Faune Élevé)**.
-4.  **Décision OK :** Si aucune des conditions de Veto n'est remplie, la décision finale est **OUI (Conditions Optimales)**.
+1. **Veto Météo :**  
+   Si l'API Météo Séchage renvoie autre chose que `"Fauchage Recommandé"`, la décision est **NON (Risque Météo)**.  
+2. **Veto Qualité/Maturité :**  
+   Si l'API DDC renvoie un `statut_maturite` différent de `"ATTEINTE"`, la décision est **NON (Maturité non atteinte)**.  
+3. **Veto Faune :**  
+   Si l'API Risque Faons renvoie un `risque_faon_niveau` > 7.0, la décision est **NON (Risque Faune Élevé)**.  
+4. **Décision OK :**  
+   Si aucune de ces conditions n'est remplie, la décision est **OUI (Conditions Optimales)**.
 
-#### Contrat JSON de l'API Mère
 
-Cette API est la réponse finale au client. Elle doit indiquer la décision et résumer les facteurs considérés. **Notez l'inclusion du `type_sol` dans la justification et les facteurs.**
+   #### Exemple de Résultat attendu
 
-```json
-{
-  "decision_finale_fauche": "OUI",
-  "justification": "Maturité atteinte, Météo OK, Risque Faune Faible. (Sol: Limon Franc)",
-  "facteurs_cles": {
-    "maturite_ddc": 655.2,
-    "conseil_sechage": "Fauchage Recommandé",
-    "risque_faon_niveau": 3.2,
-    "type_sol": "Limon Franc"
-  }
-}
-```
+   ```json
+   {
+      "decision_finale_fauche": "OUI",
+      "justification": "Maturité atteinte, Météo OK, Risque Faune Faible. (Sol: Limon Franc)",
+      "facteurs_cles": {
+         "maturite_ddc": 655.2,
+         "conseil_sechage": "Fauchage Recommandé",
+         "risque_faon_niveau": 3.2,
+         "type_sol": "Limon Franc"
+      }
+   }
+   ```
 
 ## Conclusion & ressources pour aller plus loin
 
