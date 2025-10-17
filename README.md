@@ -1,8 +1,8 @@
-# TP API pour AgroTIC : La Chaîne de Décision de Fauche
+# TP API pour AgroTIC : la décision de fauche
 
 Bienvenue dans cet atelier de **2h30** pour découvrir l'architecture et l'interconnexion des APIs dans un contexte agronomique.
 
-## Votre Mission : Développeur(se) pour la F.A.U.C.H.E.
+## Votre Mission : développer une APi pour décision de fauche
 
 Vous faites partie d'une équipe de développeurs AgroTIC. Votre client a besoin d'un outil d'aide à la décision pour optimiser la **fauche de ses prairies de foin**. La fauche est un processus critique qui demande de combiner plusieurs facteurs : la **maturité de la culture**, les **prévisions météo** et les **risques environnementaux/logistiques**.
 
