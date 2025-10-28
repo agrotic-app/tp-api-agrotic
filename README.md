@@ -49,7 +49,7 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 2.  **Clonez le projet :**
     ```bash
-    git clone [https://github.com/agrotic-app/tp-api-agrotic](https://github.com/agrotic-app/tp-api-agrotic)
+    git clone https://github.com/agrotic-app/tp-api-agrotic
     cd tp-api-agrotic
     ```
     *Note : Si vous êtes novice avec Git, demandez de l'aide à votre formateur.*
