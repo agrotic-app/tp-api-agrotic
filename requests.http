@@ -1,0 +1,17 @@
+# Test the home route
+GET http://127.0.0.1:5000/
+
+###
+
+# Test irrigation advice with valid coordinates (Montpellier)
+GET http://127.0.0.1:5000/conseil-irrigation?lat=43.6119&lon=3.8772
+
+###
+
+# Test with missing parameters (should return 400 error)
+GET http://127.0.0.1:5000/conseil-irrigation?lat=43.6119
+
+###
+
+# Test with invalid coordinates (should return 400 error)
+GET http://127.0.0.1:5000/conseil-irrigation?lat=invalid&lon=3.8772
